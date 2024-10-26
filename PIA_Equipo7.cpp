@@ -32,8 +32,8 @@ class Lista
         double promedio_general;
         Lista *siguiente;
         //Constructor
-        Lista(string nombre, long int matricula, string direccion, string telefono, double promedio_general) : nombre(nombre), matricula(matricula), direccion(direccion), telefono(telefono), promedio_general(promedio_general), siguiente(nullptr)
-        {} //Se construye cada nodo de la lista
+        Lista(string _nombre = "", double _promedio_general = 0.0L,  Lista *_siguiente = nullptr, long int _matricula = 0L, string _direccion = "", string _telefono = "") : nombre(_nombre), promedio_general(_promedio_general), siguiente(_siguiente), matricula(_matricula), direccion(_direccion), telefono(_telefono)
+        {}; //Se construye cada nodo de la lista
 
         // ============================ GETTERS Y SETTERS ========================================================
 
@@ -73,7 +73,7 @@ class Lista
 
         static void agregar_nodo( Lista *& lista_completa, string nombre, long int matricula, string direccion, string telefono, double promedio_general )
         {
-            Lista *nuevo_nodo = new Lista( nombre, matricula, direccion, telefono, promedio_general);
+            Lista *nuevo_nodo = new Lista( nombre, promedio_general, nullptr, matricula, direccion, telefono);
 
             if ( lista_completa == nullptr )
 
@@ -199,7 +199,6 @@ int main()
     int opcion;
     Lista *lista = nullptr;
     Pila *pila_descartados = nullptr;
-    bool matricula_modificada = false;
 
     setlocale( LC_CTYPE, "es_MX.UTF-8" );
 
@@ -293,6 +292,13 @@ int main()
             break;
 
             case 6:
+                if ( lista == nullptr )
+
+                    cout << "No hay registro de alumnos. . ." << endl;
+
+                else
+
+                    crear_grupo( lista );
                 
             break;
         }
@@ -565,7 +571,7 @@ static void lanzar_reportes( Lista *lista, Pila *eliminados)
             // Reporte de datos generales
                 if ( lista != nullptr )
 
-                    lista->mostrar_lista( lista );
+                    lanzar_reporte_datos_generales(lista);
 
             break;
 
@@ -810,7 +816,7 @@ static void crear_grupo( Lista *lista_completa )
 
     Lista *auxiliar = lista_completa;
     int contador_nodos = 0;
-    int numero_grupos, nodos_por_grupo;
+    int numero_grupos, nodos_por_grupo, i, j, nodos_sobrantes, nodos_grupo_actual;
 
     while ( auxiliar != nullptr )
     {
@@ -827,18 +833,27 @@ static void crear_grupo( Lista *lista_completa )
 
     } while ( numero_grupos > contador_nodos || numero_grupos <= 0 );
     
-    if ( contador_nodos % numero_grupos == 0 )
-    {
-        nodos_por_grupo = contador_nodos / numero_grupos;
-    }
-    else
-    {
-        nodos_por_grupo = contador_nodos / numero_grupos + 1;
-    }
-    
-    
+    nodos_por_grupo = contador_nodos / numero_grupos;
+    nodos_sobrantes = contador_nodos % numero_grupos;
 
+    auxiliar = lista_completa;
 
+    for ( i = 0; i < numero_grupos; i++)
+    {
+        nodos_grupo_actual = nodos_por_grupo + ( i < nodos_sobrantes ? 1 : 0 ); // Dados los alumnos sobrantes, se añaden a los primeros grupos
+
+        cout << "\nGrupo " << i + 1 << ":" << endl;
+
+        for ( j = 0; j < nodos_grupo_actual && auxiliar != nullptr; j++)
+        {
+            cout << "Nombre: " << auxiliar->nombre << endl;
+            cout << "Matrícula: " << auxiliar->get_matricula() << endl;
+            cout << "Promedio general: " << fixed << setprecision(2) << auxiliar->promedio_general << endl << endl;
+
+            auxiliar = auxiliar->siguiente;
+        }
+        
+    }
 }
 
 static void buscar_alumnos( Lista *&lista, long int *id_number, string *name)
