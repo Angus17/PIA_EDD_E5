@@ -338,7 +338,7 @@ static void dar_alta_alumnos( Lista *& lista )
     bool expresion_valida, dato_incorrecto;
     string respuesta;
 
-    regex patron_direccion("(Calle|Av.) ([a-zA-ZÁ-Ý\u00f1\u00d1. ]+) #([0-9]{1,4}) (Colonia|Fracc.|Privada) ([a-zA-ZÁ-Ý\u00f1\u00d1 ]+), ([A-Za-zÁ-Ý\u00f1\u00d1 ]+), ([A-Za-zÁ-Ý\u00f1\u00d1 ]+)");
+    regex patron_direccion("(Calle|Av.) ([a-zA-ZÁ-Ý\u00f1\u00d1. ]+) #([0-9]+) (Colonia|Fracc.|Privada) ([a-zA-ZÁ-Ý\u00f1\u00d1 ]+), ([A-Za-zÁ-Ý\u00f1\u00d1 ]+), ([A-Za-zÁ-Ý\u00f1\u00d1 ]+)");
     regex patron_nombres("([ a-zA-ZÁ-Ý\u00f1\u00d1]+)");
     regex patron_telefono(R"(\d{2}-\d{4}-\d{4})");
     regex patron_respuesta("(si|no)");
@@ -381,7 +381,9 @@ static void dar_alta_alumnos( Lista *& lista )
         {
             limpiar_pantalla();
 
-            cout << "\nIngrese la dirección del alumno: ";
+            cout << "\nIngrese la dirección del alumno: " << endl;
+            cout << "(Calle|Av.) (Nombre_calle) #(Numero) (Colonia|Fracc.|Privada) (Nombre_colonia), Municipio, Estado" << endl;
+            cout << ": " ;
             limpiar_buffer_STDIN();
             getline(cin, address);
 
@@ -397,7 +399,9 @@ static void dar_alta_alumnos( Lista *& lista )
         {
             limpiar_pantalla();
 
-            cout << "\nIngrese el teléfono del alumno: ";
+            cout << "\nIngrese el teléfono del alumno: " << endl;
+            cout << "Siguiendo el formato ##-####-####" << endl;
+            cout << ": " ;
             limpiar_buffer_STDIN();
             getline(cin, cellphone);
 
