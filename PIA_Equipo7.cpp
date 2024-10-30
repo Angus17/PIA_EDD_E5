@@ -747,10 +747,10 @@ static void recuperar_alumno( Pila *&eliminados, Lista *&lista_completa )
                     {
                         auxiliar_pila_temporal = auxiliar_pila;                        
                         agregar_nodo_pila( temporal_pila, auxiliar_pila_temporal->nombre, auxiliar_pila_temporal->matricula, auxiliar_pila_temporal->direccion, auxiliar_pila_temporal->telefono, auxiliar_pila_temporal->promedio_general );
+                        delete auxiliar_pila_temporal;
                     }
 
                     auxiliar_pila = auxiliar_pila->siguiente;
-                    delete auxiliar_pila_temporal;
                 }
 
                 if ( encontrado )
