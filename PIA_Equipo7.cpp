@@ -170,6 +170,8 @@ class Lista
         long int matricula;
         string direccion;
         string telefono;
+    
+    
 };
 
 static void eliminar_nodo_pila(Pila *&, Lista *&);
@@ -209,7 +211,7 @@ int main()
     int opcion;
     Lista *lista = nullptr;
     Pila *pila_descartados = nullptr;
-    bool dato_incorrecto;
+    bool dato_invalido;
 
     setlocale( LC_CTYPE, "es_MX.UTF-8" );
 
@@ -233,14 +235,14 @@ int main()
             limpiar_buffer_STDIN();
             cin >> opcion;
 
-            if ( ( dato_incorrecto = cin.fail() ) )
+            if ( ( dato_invalido = cin.fail() ) )
             {
                 mostrar_mensaje_error();
                 cin.clear();
             }
             
 
-        } while ( ( opcion < 1 || opcion > 7 ) || dato_incorrecto );
+        } while ( ( opcion < 1 || opcion > 7 ) || dato_invalido );
 
         limpiar_pantalla();
 
@@ -286,14 +288,8 @@ int main()
             break;
 
             case 4:
-                
-                if ( lista == nullptr )
 
-                    cout << "No hay datos por los cuales lanzar reportes. . ." << endl;
-
-                else
-
-                    lanzar_reportes( lista, pila_descartados );
+                lanzar_reportes( lista, pila_descartados );
 
             break;
 
@@ -365,7 +361,7 @@ static void dar_alta_alumnos( Lista *& lista )
     string name, address, cellphone;
     double average_grade;
     long int id;
-    bool expresion_valida, dato_incorrecto;
+    bool expresion_valida, dato_invalido;
     string respuesta;
 
     regex patron_direccion("(Calle|Av.) ([a-zA-ZÁ-Ý\u00f1\u00d1. ]+) #([0-9]+) (Colonia|Fracc.|Privada) ([a-zA-ZÁ-Ý\u00f1\u00d1 ]+), ([A-Za-zÁ-Ý\u00f1\u00d1 ]+), ([A-Za-zÁ-Ý\u00f1\u00d1 ]+)");
@@ -399,13 +395,13 @@ static void dar_alta_alumnos( Lista *& lista )
             limpiar_buffer_STDIN();
             cin >> id;
 
-            if ( ( dato_incorrecto = cin.fail() ) )
+            if ( ( dato_invalido = cin.fail() ) )
             {
                 mostrar_mensaje_error();
                 cin.clear();
             }
             
-        } while ( dato_incorrecto );
+        } while ( dato_invalido || id <= 0 );
         
         do
         {
@@ -450,12 +446,12 @@ static void dar_alta_alumnos( Lista *& lista )
             limpiar_buffer_STDIN();
             cin >> average_grade;
 
-            if ( ( dato_incorrecto = cin.fail() ) )
+            if ( ( dato_invalido = cin.fail() ) )
             {
                 mostrar_mensaje_error();
                 cin.clear();
             }
-        } while ( dato_incorrecto || ( average_grade < 0.0L || average_grade > 100.0L ) );
+        } while ( dato_invalido || ( average_grade < 0.0L || average_grade > 100.0L ) );
         
         lista->agregar_nodo( lista, name, id, address, cellphone, average_grade );
 
@@ -485,6 +481,8 @@ static void dar_baja_alumnos( Lista *& lista, Pila *& pila_eliminados)
     long int id;
     string name;
 
+    bool dato_invalido;
+
     do
     {
         do
@@ -497,8 +495,14 @@ static void dar_baja_alumnos( Lista *& lista, Pila *& pila_eliminados)
             cout << "\nIngrese la opción deseada: ";
             limpiar_buffer_STDIN();
             cin >> opcion;
-            
-        } while ( opcion < 1 || opcion > 3 );
+
+            if ( ( dato_invalido = cin.fail() ) )
+            {
+                mostrar_mensaje_error();
+                cin.clear();
+            }
+
+        } while ( ( opcion < 1 || opcion > 3 ) || dato_invalido);
         
 
         switch ( opcion )
@@ -513,7 +517,13 @@ static void dar_baja_alumnos( Lista *& lista, Pila *& pila_eliminados)
                     limpiar_buffer_STDIN();
                     cin >> id;
 
-                } while ( id < 0L );
+                    if ( ( dato_invalido = cin.fail() ) )
+                    {
+                        mostrar_mensaje_error();
+                        cin.clear();
+                    }
+
+                } while ( id < 0L || dato_invalido );
 
                 lista->eliminar_nodo(lista, pila_eliminados, &id, nullptr);
                 
@@ -578,43 +588,65 @@ static void lanzar_reportes( Lista *lista, Pila *eliminados)
             case 'a':
             // Reporte de alumnos aprobados
 
-                lanzar_reporte_aprobados( lista );
+                if ( lista == nullptr )
+
+                    cout << "No hay registro de alumnos activos . . ." << endl;
+
+                else
+
+                    lanzar_reporte_aprobados( lista );
 
             break;
 
             case 'b':
             // Porcentaje de aprobados y reprobados
 
-                lanzar_reporte_aprobados_reprobados( lista );
+                if ( lista == nullptr )
+
+                    cout << "No hay registro de alumnos activos . . ." << endl;
+
+                else
+
+                    lanzar_reporte_aprobados_reprobados( lista );
 
             break;
 
             case 'c':
             // Reporte de calificaciones iguales o superiores a la ingresada
+                if ( lista == nullptr )
 
-                do
+                    cout << "No hay registro de alumnos activos . . ." << endl;
+
+                else
                 {
-                    limpiar_pantalla();
-
-                    cout << "\nIngrese el promedio general del alumno: ";
-                    limpiar_buffer_STDIN();
-                    cin >> promedio;
-
-                    if ( ( dato_incorrecto = cin.fail() ) )
+                    do
                     {
-                        mostrar_mensaje_error();
-                        cin.clear();
-                    }
-                } while ( dato_incorrecto || ( promedio < 0.0L || promedio > 100.0L ) );
+                        limpiar_pantalla();
 
-                lanzar_reporte_promedio_general( lista, promedio );
+                        cout << "\nIngrese un promedio general: ";
+                        limpiar_buffer_STDIN();
+                        cin >> promedio;
+
+                        if ( ( dato_incorrecto = cin.fail() ) )
+                        {
+                            mostrar_mensaje_error();
+                            cin.clear();
+                        }
+                    } while ( dato_incorrecto || ( promedio < 0.0L || promedio > 100.0L ) );
+
+                    lanzar_reporte_promedio_general( lista, promedio );
+                }
 
             break;
 
             case 'd':
 
             // Reporte de datos generales
-                if ( lista != nullptr )
+                if ( lista == nullptr )
+
+                    cout << "No hay registro de alumnos activos." << endl;
+
+                else
 
                     lanzar_reporte_datos_generales(lista);
 
@@ -624,13 +656,7 @@ static void lanzar_reportes( Lista *lista, Pila *eliminados)
 
             // Reporte de alumnos inactivos
 
-                if ( eliminados != nullptr )
-
-                    lanzar_reporte_inactivos( eliminados );
-
-                else
-
-                    cout << "\nNo hay alumnos dados de baja. . ." << endl;
+                lanzar_reporte_inactivos( eliminados );
 
             break;
         }
@@ -658,6 +684,9 @@ static void recuperar_alumno( Pila *&eliminados, Lista *&lista_completa )
 
     do
     {
+
+        encontrado = false;
+
         do
         {
             limpiar_pantalla();
@@ -713,9 +742,8 @@ static void recuperar_alumno( Pila *&eliminados, Lista *&lista_completa )
                     cout << "Alumno recuperado exitosamente!. . ." << endl;
                 }
                 else
-                {
+
                     cout << "El alumno no ha sido encontrado. . ." << endl;                    
-                }
 
             break;
 
@@ -759,18 +787,13 @@ static void recuperar_alumno( Pila *&eliminados, Lista *&lista_completa )
                     cout << "Alumno recuperado exitosamente!. . ." << endl;
                 }
                 else
-                {
+
                     cout << "El alumno no ha sido encontrado. . ." << endl;
-                    
-                }
 
             break;
 
         }
 
-        if ( opcion != 3 )
-
-            pausar_terminal();
 
         Pila *temporal = nullptr;
 
@@ -784,6 +807,14 @@ static void recuperar_alumno( Pila *&eliminados, Lista *&lista_completa )
         }
 
         eliminados = auxiliar_pila;
+
+        if ( opcion != 3 )
+
+            pausar_terminal();
+
+        if ( eliminados == nullptr )
+
+            limpiar_pantalla();
 
     } while ( opcion != 3 && eliminados != nullptr);
 }
@@ -851,6 +882,10 @@ static void eliminar_nodo_pila(Pila *&actual, Lista *& lista_completa)
     Pila *auxiliar = actual;
     actual = auxiliar->siguiente;
     lista_completa->agregar_nodo(lista_completa, auxiliar->nombre, auxiliar->matricula, auxiliar->direccion, auxiliar->telefono, auxiliar->promedio_general);
+    
+    if ( lista_completa->siguiente != nullptr )
+
+        ordenar_lista( lista_completa );
 
     delete auxiliar;
 }
@@ -858,11 +893,13 @@ static void eliminar_nodo_pila(Pila *&actual, Lista *& lista_completa)
 static void lanzar_reporte_aprobados( Lista *lista_completa )
 {
     Lista *auxiliar = lista_completa;
+    bool aprobados = false;
 
     while ( auxiliar != nullptr )
     {
         if ( auxiliar->promedio_general >= 70.0L )
         {
+            aprobados = true;
             cout << "\nNombre: " << auxiliar->nombre << endl;
             cout << "Matrícula: " << auxiliar->get_matricula() << endl;
             cout << "Promedio general: " << fixed << setprecision(2) << auxiliar->promedio_general << endl << endl;
@@ -871,6 +908,9 @@ static void lanzar_reporte_aprobados( Lista *lista_completa )
         auxiliar = auxiliar->siguiente;
     }
     
+    if ( !aprobados )
+
+        cout << "\nNo hay registro de alumnos aprobados." << endl << endl;
 
 }
 
@@ -907,11 +947,13 @@ static void lanzar_reporte_aprobados_reprobados( Lista *lista_completa )
 static void lanzar_reporte_promedio_general( Lista *lista_completa, double &promedio_ingresado )
 {
     Lista *auxiliar = lista_completa;
+    bool encontrados = false;
 
     while ( auxiliar != nullptr )
     {
         if ( auxiliar->promedio_general >= promedio_ingresado )
         {
+            encontrados = true;
             cout << "\nNombre: " << auxiliar->nombre << endl;
             cout << "Promedio general: " << fixed << setprecision(2) << auxiliar->promedio_general << endl << endl;
         }
@@ -919,7 +961,9 @@ static void lanzar_reporte_promedio_general( Lista *lista_completa, double &prom
         auxiliar = auxiliar->siguiente;
     }
     
+    if ( !encontrados )
 
+        cout << "\nNo hay alumnos con un promedio general mayor o igual a " << fixed << setprecision(2) << promedio_ingresado << endl << endl;
 }
 
 static void lanzar_reporte_datos_generales( Lista *lista_completa )
@@ -930,14 +974,27 @@ static void lanzar_reporte_datos_generales( Lista *lista_completa )
 static void lanzar_reporte_inactivos( Pila *pila_eliminados )
 {
     Pila *auxiliar = pila_eliminados;
+    bool inactivos;
+
+    ( auxiliar != nullptr ) ? inactivos = true : inactivos = false;
+
+    cout <<"- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << endl ;
 
     while ( auxiliar != nullptr )
     {
         cout << "\nNombre: " << auxiliar->nombre << endl;
-        cout << "Matrícula: " << auxiliar->matricula << endl;
+        cout << "Matrícula: " << auxiliar->matricula << endl << endl;
+        cout <<"- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << endl ;
         
         auxiliar = auxiliar->siguiente;
     }
+    
+    if ( !inactivos )
+    {
+        cout << "\nNo hay registro de alumnos inactivos, todos estan dados de alta!." << endl << endl;
+        cout <<"- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << endl << endl;
+    }
+
     
 
 }
@@ -1309,9 +1366,10 @@ static void cambiar_informacion( Lista *&nodo, Lista *&lista_completa )
 
             } while ( !expresion_valida );
         }
-        else if ( opcion == 2 && lista_completa->siguiente != nullptr )
+    
+        if ( opcion == 2 && lista_completa->siguiente != nullptr )
 
-                ordenar_lista( lista_completa );
+            ordenar_lista( lista_completa );
 
     } while ( opcion != 6 && respuesta == "si" );
 }
