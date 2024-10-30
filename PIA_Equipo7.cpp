@@ -1,8 +1,9 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <chrono>
+#include <thread>
 #include <cstring>
-#include <cctype>
 #include <clocale>
 #include <regex>
 
@@ -11,6 +12,8 @@
 #endif 
 
 using namespace std;
+using namespace chrono;
+using namespace this_thread;
 
 struct Pila
 {
@@ -145,14 +148,20 @@ class Lista
                     auxiliar_pila = lista_completa;
                     lista_completa = lista_completa->siguiente;
                     agregar_nodo_pila(pila_alumnos_eliminados, auxiliar_pila->nombre, auxiliar_pila->get_matricula(), auxiliar_pila->get_direccion(), auxiliar_pila->get_telefono(), auxiliar_pila->promedio_general);
+
                     delete auxiliar;
+
+                    cout << "Alumno dado de baja exitosamente!" << endl;
                 }
                 else  // Es el ultimo nodo o cualquiera que no es el primero
                 {
                     auxiliar_pila = anterior->siguiente;
                     anterior->siguiente = auxiliar->siguiente;
                     agregar_nodo_pila(pila_alumnos_eliminados, auxiliar_pila->nombre, auxiliar_pila->get_matricula(), auxiliar_pila->get_direccion(), auxiliar_pila->get_telefono(), auxiliar_pila->promedio_general);
+                    
                     delete auxiliar;
+                    
+                    cout << "Alumno dado de baja exitosamente!" << endl;
                 }
             
         }
@@ -200,6 +209,7 @@ int main()
     int opcion;
     Lista *lista = nullptr;
     Pila *pila_descartados = nullptr;
+    bool dato_incorrecto;
 
     setlocale( LC_CTYPE, "es_MX.UTF-8" );
 
@@ -223,7 +233,14 @@ int main()
             limpiar_buffer_STDIN();
             cin >> opcion;
 
-        } while ( opcion < 1 || opcion > 7 );
+            if ( ( dato_incorrecto = cin.fail() ) )
+            {
+                mostrar_mensaje_error();
+                cin.clear();
+            }
+            
+
+        } while ( ( opcion < 1 || opcion > 7 ) || dato_incorrecto );
 
         limpiar_pantalla();
 
@@ -311,12 +328,25 @@ int main()
                     lista = lista->siguiente;
                 }
 
+                Pila *nodo_eliminar = nullptr;
+
                 while ( pila_descartados != nullptr )
                 {
-                    delete pila_descartados;
+                    nodo_eliminar = pila_descartados;
                     pila_descartados = pila_descartados->siguiente;
+                    delete nodo_eliminar;
                 }
-                
+
+                cout << "Saliendo del programa .";
+                fflush(stdout);
+                sleep_for( seconds(2) );
+
+                cout << "   .";
+                fflush(stdout);
+                sleep_for( seconds(2) );
+
+                cout << "   ." << endl;
+                sleep_for( seconds(2) );
                 
             break;
         }
@@ -507,11 +537,11 @@ static void dar_baja_alumnos( Lista *& lista, Pila *& pila_eliminados)
 
         }
 
-        if ( opcion!= 3 )
+        if ( opcion != 3 )
 
             pausar_terminal();
 
-    } while ( opcion != 3 );
+    } while ( opcion != 3 && lista != nullptr );
     
 
 }
@@ -620,7 +650,9 @@ static void recuperar_alumno( Pila *&eliminados, Lista *&lista_completa )
     bool dato_incorrecto, expresion_valida, encontrado = false;
 
     Pila *auxiliar_pila = eliminados;
+    Pila *auxiliar_pila_temporal = nullptr;
     Pila *temporal_pila = nullptr;
+    Pila *nodo_recuperado = nullptr;
 
     regex patron_nombres("([ a-zA-ZÁ-Ý\u00f1\u00d1]+)");
 
@@ -658,42 +690,31 @@ static void recuperar_alumno( Pila *&eliminados, Lista *&lista_completa )
 
                 } while ( por_matricula < 0 || dato_incorrecto );
 
-                while ( auxiliar_pila != nullptr && !encontrado )
+                while ( auxiliar_pila != nullptr )
                 {
                     if ( auxiliar_pila->matricula == por_matricula )
-
+                    {
                         encontrado = true;
+                        nodo_recuperado = auxiliar_pila;
+                    }
                     else
-
-                        agregar_nodo_pila( temporal_pila, auxiliar_pila->nombre, auxiliar_pila->matricula, auxiliar_pila->direccion, auxiliar_pila->telefono, auxiliar_pila->promedio_general );
-
+                    {
+                        auxiliar_pila_temporal = auxiliar_pila;
+                        agregar_nodo_pila( temporal_pila, auxiliar_pila_temporal->nombre, auxiliar_pila_temporal->matricula, auxiliar_pila_temporal->direccion, auxiliar_pila_temporal->telefono, auxiliar_pila_temporal->promedio_general );
+                        delete auxiliar_pila_temporal;
+                    }
 
                     auxiliar_pila = auxiliar_pila->siguiente;
                 }
 
                 if ( encontrado )
                 {
-                    eliminar_nodo_pila( auxiliar_pila, lista_completa );
-
-                    while ( temporal_pila != nullptr )
-                    {
-                        agregar_nodo_pila( eliminados, temporal_pila->nombre, temporal_pila->matricula, temporal_pila->direccion, temporal_pila->telefono, temporal_pila->promedio_general );
-                        temporal_pila = temporal_pila->siguiente;
-                    }
-
+                    eliminar_nodo_pila( nodo_recuperado, lista_completa );
                     cout << "Alumno recuperado exitosamente!. . ." << endl;
                 }
                 else
                 {
-
-                    while ( temporal_pila != nullptr )
-                    {
-                        agregar_nodo_pila( eliminados, temporal_pila->nombre, temporal_pila->matricula, temporal_pila->direccion, temporal_pila->telefono, temporal_pila->promedio_general );
-                        temporal_pila = temporal_pila->siguiente;
-                    }
-
-                    cout << "El alumno no ha sido encontrado. . ." << endl;
-                    
+                    cout << "El alumno no ha sido encontrado. . ." << endl;                    
                 }
 
             break;
@@ -715,41 +736,30 @@ static void recuperar_alumno( Pila *&eliminados, Lista *&lista_completa )
 
                 } while ( !expresion_valida );
 
-                while ( auxiliar_pila != nullptr && !encontrado )
+                while ( auxiliar_pila != nullptr )
                 {
                     if ( auxiliar_pila->nombre == por_nombre )
-
+                    {
                         encontrado = true;
-
+                        nodo_recuperado = auxiliar_pila;
+                    }
                     else
-
-                        agregar_nodo_pila( temporal_pila, auxiliar_pila->nombre, auxiliar_pila->matricula, auxiliar_pila->direccion, auxiliar_pila->telefono, auxiliar_pila->promedio_general );
-
+                    {
+                        auxiliar_pila_temporal = auxiliar_pila;                        
+                        agregar_nodo_pila( temporal_pila, auxiliar_pila_temporal->nombre, auxiliar_pila_temporal->matricula, auxiliar_pila_temporal->direccion, auxiliar_pila_temporal->telefono, auxiliar_pila_temporal->promedio_general );
+                    }
 
                     auxiliar_pila = auxiliar_pila->siguiente;
+                    delete auxiliar_pila_temporal;
                 }
 
                 if ( encontrado )
                 {
-                    eliminar_nodo_pila( auxiliar_pila, lista_completa );
-
-                    while ( temporal_pila != nullptr )
-                    {
-                        agregar_nodo_pila( eliminados, temporal_pila->nombre, temporal_pila->matricula, temporal_pila->direccion, temporal_pila->telefono, temporal_pila->promedio_general );
-                        temporal_pila = temporal_pila->siguiente;
-                    }
-                    
+                    eliminar_nodo_pila( nodo_recuperado, lista_completa );
                     cout << "Alumno recuperado exitosamente!. . ." << endl;
                 }
                 else
                 {
-
-                    while ( temporal_pila != nullptr )
-                    {
-                        agregar_nodo_pila( eliminados, temporal_pila->nombre, temporal_pila->matricula, temporal_pila->direccion, temporal_pila->telefono, temporal_pila->promedio_general );
-                        temporal_pila = temporal_pila->siguiente;
-                    }
-
                     cout << "El alumno no ha sido encontrado. . ." << endl;
                     
                 }
@@ -762,7 +772,20 @@ static void recuperar_alumno( Pila *&eliminados, Lista *&lista_completa )
 
             pausar_terminal();
 
-    } while ( opcion != 3 );
+        Pila *temporal = nullptr;
+
+        while ( temporal_pila != nullptr )
+        {
+            temporal = temporal_pila;
+            temporal_pila = temporal_pila->siguiente;
+
+            agregar_nodo_pila( auxiliar_pila, temporal->nombre, temporal->matricula, temporal->direccion, temporal->telefono, temporal->promedio_general );
+            delete temporal;
+        }
+
+        eliminados = auxiliar_pila;
+
+    } while ( opcion != 3 && eliminados != nullptr);
 }
 
 static void ordenar_lista( Lista *& lista )
@@ -772,6 +795,7 @@ static void ordenar_lista( Lista *& lista )
     Lista *auxiliar = lista;
     Lista *sorted = nullptr;
     Lista *next = nullptr;
+
 
     while ( auxiliar != nullptr )
     {
@@ -825,8 +849,9 @@ static void agregar_nodo_pila( Pila *& pila, const string &nombre, const long in
 static void eliminar_nodo_pila(Pila *&actual, Lista *& lista_completa)
 {
     Pila *auxiliar = actual;
-    actual = actual->siguiente;
+    actual = auxiliar->siguiente;
     lista_completa->agregar_nodo(lista_completa, auxiliar->nombre, auxiliar->matricula, auxiliar->direccion, auxiliar->telefono, auxiliar->promedio_general);
+
     delete auxiliar;
 }
 
