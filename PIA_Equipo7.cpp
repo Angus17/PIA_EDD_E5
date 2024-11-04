@@ -280,7 +280,7 @@ int main()
                 {
                     recuperar_alumno(pila_descartados, lista);
 
-                    if ( lista->siguiente != nullptr )
+                    if ( lista != nullptr )
 
                         ordenar_lista( lista );
                     
@@ -676,9 +676,9 @@ static void recuperar_alumno( Pila *&eliminados, Lista *&lista_completa )
     bool dato_incorrecto, expresion_valida, encontrado = false;
 
     Pila *auxiliar_pila = eliminados;
-    Pila *auxiliar_pila_temporal = nullptr;
-    Pila *temporal_pila = nullptr;
-    Pila *nodo_recuperado = nullptr;
+    Pila *auxiliar_pila_temporal = nullptr; // Guarda el elemento anterior del auxiliar_pila
+    Pila *temporal_pila = nullptr; // Guarda los elementos de la pila temporal para eliminarlos
+    Pila *nodo_recuperado = nullptr; // Reserva el nodo a recuperar y regresar a la lista
 
     regex patron_nombres("([ a-zA-ZÁ-Ý\u00f1\u00d1]+)");
 
@@ -719,7 +719,7 @@ static void recuperar_alumno( Pila *&eliminados, Lista *&lista_completa )
 
                 } while ( por_matricula < 0 || dato_incorrecto );
 
-                while ( auxiliar_pila != nullptr )
+                while ( auxiliar_pila != nullptr && !encontrado )
                 {
                     if ( auxiliar_pila->matricula == por_matricula )
                     {
@@ -764,7 +764,7 @@ static void recuperar_alumno( Pila *&eliminados, Lista *&lista_completa )
 
                 } while ( !expresion_valida );
 
-                while ( auxiliar_pila != nullptr )
+                while ( auxiliar_pila != nullptr && !encontrado)
                 {
                     if ( auxiliar_pila->nombre == por_nombre )
                     {
@@ -1074,8 +1074,6 @@ static void modificar_datos( Lista *&lista_completa )
 
 static void crear_grupo( Lista *lista_completa )
 {
-    // Pendiente
-
     Lista *auxiliar = lista_completa;
     int contador_nodos = 0;
     int numero_grupos, nodos_por_grupo, i, j, nodos_sobrantes, nodos_grupo_actual;
